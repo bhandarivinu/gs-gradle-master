@@ -1,0 +1,50 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gs-gradle-master
+  namespace: dev
+spec:
+  selector:
+    matchLabels:
+      app: gs-gradle-master
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: gs-gradle-master
+    spec:
+      containers:
+      - name: pods-gs-gradle-master
+        image: tntaksreg.azurecr.io/gs-gradle-master/complete/build/distributions:latest
+        imagePullPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: gs-gradle-master-service
+    namespace: dev
+spec:
+  selector:
+    app: gs-gradle-master
+  type: ClusterIP
+  ports:
+    - protocol: TCP
+      port: 80
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: gs-gradle-master-ingress
+  namespace: dev
+  annotations:
+    kubernetes.io/ingress.class: addon-http-application-routing
+spec:
+  rules:
+  - host: gs-gradle-master.e46708b92c054086909b.eastus.aksapp.io
+    http:
+      paths:
+      - backend:
+          serviceName: gs-gradle-master-service
+          servicePort: 80
+        path: /
